@@ -366,8 +366,13 @@ func (m *Model) MoveUp(n int) {
 	case offset >= 1:
 		offset = clamp(offset+n, 1, m.viewport.Height())
 	}
-	m.viewport.SetYOffset(offset)
+	// Re-render the row window before applying the offset (as MoveDown does):
+	// SetYOffset clamps against the current content, which still ends at the
+	// previous cursor. From the last row that content is only one row taller
+	// than the viewport, so the new offset would be cut back and the whole
+	// window would shift up by a row instead of just the cursor.
 	m.UpdateViewport()
+	m.viewport.SetYOffset(offset)
 }
 
 // MoveDown moves the selection down by any number of rows.
